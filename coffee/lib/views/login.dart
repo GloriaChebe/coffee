@@ -1,4 +1,10 @@
+import 'package:coffee/views/home.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get_storage/get_storage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,6 +24,41 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      final response = await http.post(
+        Uri.parse('https://sanerylgloann.co.ke/coffeeInn/readUsers.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true || data['status'] == 'success') {
+          final storage = GetStorage();
+          storage.write('userID', data['userID']);
+          storage.write('userRole', data['role']);
+          // Store other user data as needed
+
+          Navigator.pop(context, true); // Return true to indicate successful login
+        } else {
+          // Handle login error (e.g., show a message)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'Login failed')),
+          );
+        }
+      } else {
+        // Handle server error
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Server error, please try again')),
+        );
+      }
+    }
   }
 
   @override
@@ -145,11 +186,8 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
-                              // if (_formKey.currentState!.validate()) {
-                              //   // TODO: Implement login logic
-                              //   print('Login form is valid');
-                              // }
+                            onPressed: (){
+                              Get.to(HomePage());
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.brown.shade900,

@@ -1,5 +1,6 @@
 
 
+import 'package:coffee/views/Admin/manageItems.dart';
 import 'package:coffee/views/aboutUs.dart';
 import 'package:coffee/views/login.dart';
 import 'package:coffee/views/register.dart';
@@ -13,6 +14,7 @@ class Pages {
   static const String homepage = '/homepage';
   static const String contactUs='/contactUs';
    static const String about = '/about';
+    static const String manageItems = '/manageItems';
   // static const String status = '/status';
   // static const String profile = '/profile';
   // static const String admin = '/admin';
@@ -29,6 +31,7 @@ class Pages {
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: signUp, page: () => RegistrationPage()),
      GetPage(name: login, page: () => LoginPage()),
+     GetPage(name: manageItems, page: () => CategoriesAdmin()),
     //  GetPage(name: homepage, page: () => HomePage()),
       //GetPage(name: contactUs, page: () => ContactUsPage()),
      GetPage(name: about, page: () => AboutUsPage()),

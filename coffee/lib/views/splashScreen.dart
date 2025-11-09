@@ -1,4 +1,5 @@
 import 'package:coffee/configs/constants.dart';
+import 'package:coffee/views/Admin/manageItems.dart';
 import 'package:coffee/views/home.dart';
 import 'package:coffee/views/login.dart';
 import 'package:coffee/views/register.dart';
@@ -67,7 +68,7 @@ class SplashScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
+                      MaterialPageRoute(builder: (context) =>LoginPage())
                     );
                   },
                   style: ElevatedButton.styleFrom(
