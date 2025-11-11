@@ -1,3 +1,4 @@
+import 'package:coffee/configs/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:coffee/views/Item.dart';
 import 'package:coffee/views/checkout.dart';
@@ -73,7 +74,7 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor:primaryColor
       ),
       body: list.isEmpty
           ? const Center(child: Text('Your cart is empty'))
@@ -128,7 +129,7 @@ class _CartPageState extends State<CartPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.brown.shade700,
                           ),
-                          child: const Text('Proceed to Checkout'),
+                          child: const Text('Proceed to Checkout',style: TextStyle(color: appwhiteColor),),
                         ),
                       ),
                     ],

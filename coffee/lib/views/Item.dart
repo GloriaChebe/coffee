@@ -131,7 +131,7 @@ class ProductItem extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => onAddToCart(product),
-                    child: const Text('Add'),
+                    child: const Text('Add to cart', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],

@@ -5,8 +5,10 @@ import 'package:coffee/controller/reportsController.dart';
 import 'package:coffee/model/statusModel.dart' show Donation;
 import 'package:coffee/views/Admin/manage%20users.dart';
 import 'package:coffee/views/Admin/manageItems.dart';
+import 'package:coffee/views/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -30,12 +32,24 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Admin Dashboard',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: primaryColor,
+       automaticallyImplyLeading: false,
+  title: const Text(
+    'Admin Dashboard',
+    style: TextStyle(color: Colors.white),
+  ),
+  backgroundColor: primaryColor,
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.white),
+      tooltip: 'Log Out',
+      onPressed: () {
+        // Clear stored session data
+        //GetStorage().erase();
+        // Navigate to login page
+        Get.offAll(() => HomePage());
+      },
+    ),
+  ],
       ),
       body: Container(
         decoration: BoxDecoration(

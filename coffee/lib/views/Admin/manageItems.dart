@@ -11,8 +11,8 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
-String? selectedCategory = 'Food';
-  String? urgency = 'Urgent';
+//String? selectedCategory = 'Food';
+ // String? urgency = 'Urgent';
    final ItemController itemController = Get.put(ItemController());
     final TextEditingController priceController = TextEditingController();
     
@@ -39,7 +39,7 @@ class _CategoriesAdminState extends State<CategoriesAdmin> {
         foregroundColor: appwhiteColor,
         title: Center(
           child: Text(
-            'Browse Categories',
+            'Manage Items',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -161,7 +161,8 @@ class _CategoriesAdminState extends State<CategoriesAdmin> {
     border: OutlineInputBorder(),
   ),
   inputFormatters: [
-    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+    FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
+,
   ],
 ),
                     // if (selectedCategory == 'Money')

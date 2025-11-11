@@ -18,20 +18,26 @@ class DashboardController extends GetxController {
   var summary = Rxn<DashboardSummary>();
   var isLoading = false.obs;
 
-  /// Fetch dashboard summary from your backend
   Future<void> fetchDashboardSummary() async {
     try {
       isLoading(true);
-      final response = await http.get(Uri.parse(
-          'https://sanerylgloann.co.ke/coffeeInn/readStatics.php'));
+      final response = await http.get(
+        Uri.parse('https://sanerylgloann.co.ke/coffeeInn/readStatics.php'),
+      );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        summary.value = DashboardSummary(
-          totalDonations: int.tryParse(data['totalDonations'].toString()) ?? 0,
-          pendingApprovals:
-              int.tryParse(data['pendingApprovals'].toString()) ?? 0,
-          totalUsers: int.tryParse(data['totalUsers'].toString()) ?? 0,
-        );
+
+        if (data['success'] == 1 && data['data'] != null && data['data'].isNotEmpty) {
+          final summaryData = data['data'][0]; // <-- important
+          summary.value = DashboardSummary(
+            totalDonations: int.tryParse(summaryData['totalOrders'].toString()) ?? 0,
+            pendingApprovals: int.tryParse(summaryData['pendingApprovals'].toString()) ?? 0,
+            totalUsers: int.tryParse(summaryData['totalUsers'].toString()) ?? 0,
+          );
+        } else {
+          Get.snackbar('Error', 'No dashboard data found');
+        }
       } else {
         Get.snackbar('Error', 'Failed to fetch dashboard summary');
       }

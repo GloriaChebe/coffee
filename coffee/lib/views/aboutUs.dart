@@ -1,3 +1,4 @@
+import 'package:coffee/configs/constants.dart';
 import 'package:flutter/material.dart';
 
 class AboutUsPage extends StatelessWidget {
@@ -5,8 +6,8 @@ class AboutUsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('About Us'),
-        backgroundColor: const Color(0xFFFFA000),
+        title: Text('About Us', style: TextStyle(color: Colors.white)),
+        backgroundColor: primaryColor,
       ),
       body: Center(
         child: Padding(

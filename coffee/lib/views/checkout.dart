@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:coffee/configs/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 
@@ -39,8 +41,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
-                  labelText: 'Phone (2547XXXXXXXX)',
+                  labelText: 'Phone (07XXXXXXXX)',
                 ),
+                inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly, // Only numbers allowed
+                 LengthLimitingTextInputFormatter(10),   // Limit to 10 digits
+  ],
               ),
             ],
           ),
@@ -174,12 +180,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _showMpesaDialog,
-                child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Confirm & Pay (Mpesa)'),
-              ),
+              child:ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: primaryColor, // 🌿 Change this to your preferred color
+    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+  onPressed: _loading ? null : _showMpesaDialog,
+  child: _loading
+      ? const SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        )
+      : const Text(
+          'Confirm & Pay (Mpesa)',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
             ),
           ],
         ),

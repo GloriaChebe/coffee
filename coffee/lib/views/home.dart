@@ -228,7 +228,7 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           _buildDashboard(),
-          StatusPage(), // your orders/history page
+          StatusPage(), 
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -248,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
         backgroundColor:
-            _cartItems.isEmpty ? Colors.grey : primaryColor,
+            _cartItems.isEmpty ? Colors.grey : secondaryColor,
         child: Stack(
           alignment: Alignment.center,
           children: [
