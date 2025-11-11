@@ -1,48 +1,59 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// Combined Product model + ProductItem widget in one file.
-/// Replace both product.dart and Item.dart usages with this single file.
-/// Update imports elsewhere to: import 'package:coffee/views/Item.dart';
-
+/// Product model
 class Product {
-  final String id;
+  final String? id;
   final String name;
-  final String description;
   final double price;
-  final String imageFileName; // raw filename from API
-  final String imageUrl; // full constructed URL
+  final String description;
+  final String imageFileName;
+  final String imageUrl;
 
   Product({
-    required this.id,
+    this.id,
     required this.name,
-    required this.description,
     required this.price,
+    required this.description,
     required this.imageFileName,
     required this.imageUrl,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    final rawImage = (json['image'] ?? json['image_name'] ?? json['img'] ?? '').toString();
-    const base = 'https://sanerylgloann.co.ke/coffeeInn/coffees/';
-    final fullUrl = rawImage.isNotEmpty ? (base + rawImage) : '';
+    final rawId = json['id'] ??
+        json['itemsID'] ??
+        json['itemID'] ??
+        json['itemsId'] ??
+        json['ItemsID'] ??
+        json['items_id'];
 
-    if (kDebugMode) {
-      // helpful when debugging on device
-      debugPrint('Product.fromJson -> image file: $rawImage, url: $fullUrl');
+    final rawImage = json['imageUrl'] ??
+        json['image'] ??
+        json['imageFileName'] ??
+        json['image_url'] ??
+        json['img'] ??
+        '';
+
+    String imageUrl = rawImage.toString().trim();
+    if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
+      while (imageUrl.startsWith('/')) {
+        imageUrl = imageUrl.substring(1);
+      }
+      const base = 'https://sanerylgloann.co.ke/coffeeInn/coffees/';
+      imageUrl = base + imageUrl;
     }
 
     return Product(
-      id: (json['id'] ?? json['item_id'] ?? '').toString(),
-      name: (json['name'] ?? json['title'] ?? 'Unnamed').toString(),
-      description: (json['description'] ?? json['desc'] ?? '').toString(),
-      price: double.tryParse((json['price'] ?? json['cost'] ?? '0').toString()) ?? 0.0,
-      imageFileName: rawImage,
-      imageUrl: fullUrl,
+      id: rawId?.toString(),
+      name: (json['name'] ?? json['item_name'] ?? '').toString(),
+      price: double.tryParse((json['price'] ?? '0').toString()) ?? 0.0,
+      description: (json['description'] ?? '').toString(),
+      imageFileName: (json['imageFileName'] ?? '').toString(),
+      imageUrl: imageUrl,
     );
   }
 }
 
+/// ProductItem widget
 class ProductItem extends StatelessWidget {
   final Product product;
   final void Function(Product) onAddToCart;
@@ -59,11 +70,10 @@ class ProductItem extends StatelessWidget {
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.hardEdge,
-      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Image area
+          // Image
           AspectRatio(
             aspectRatio: 4 / 3,
             child: product.imageUrl.isNotEmpty
@@ -76,16 +86,21 @@ class ProductItem extends StatelessWidget {
                       return const Center(child: CircularProgressIndicator());
                     },
                     errorBuilder: (context, error, stackTrace) {
-                      debugPrint('Image.network error: $error for ${product.imageUrl}');
                       return Container(
                         color: Colors.grey[200],
-                        child: const Center(child: Icon(Icons.broken_image, size: 40, color: Colors.grey)),
+                        child: const Center(
+                          child: Icon(Icons.broken_image,
+                              size: 40, color: Colors.grey),
+                        ),
                       );
                     },
                   )
                 : Container(
                     color: Colors.grey[200],
-                    child: const Center(child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey)),
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported,
+                          size: 40, color: Colors.grey),
+                    ),
                   ),
           ),
 
@@ -93,7 +108,6 @@ class ProductItem extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -104,7 +118,7 @@ class ProductItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '\$${product.price.toStringAsFixed(2)}',
+                  'Ksh ${product.price.toStringAsFixed(2)}',
                   style: TextStyle(color: Colors.brown.shade700),
                 ),
                 const SizedBox(height: 8),
@@ -113,7 +127,8 @@ class ProductItem extends StatelessWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.brown.shade700,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => onAddToCart(product),
                     child: const Text('Add'),

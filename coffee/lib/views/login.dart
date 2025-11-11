@@ -1,7 +1,8 @@
+import 'package:coffee/configs/constants.dart';
 import 'package:coffee/views/home.dart';
+import 'package:coffee/views/register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -28,34 +29,46 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      final response = await http.post(
-        Uri.parse('https://sanerylgloann.co.ke/coffeeInn/readUsers.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        }),
-      );
+      try {
+        final response = await http.post(
+          Uri.parse('https://sanerylgloann.co.ke/coffeeInn/readUsers.php'),
+          body: {
+            'email': _emailController.text.trim(),
+            'password': _passwordController.text.trim(),
+          },
+        );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true || data['status'] == 'success') {
-          final storage = GetStorage();
-          storage.write('userID', data['userID']);
-          storage.write('userRole', data['role']);
-          // Store other user data as needed
+        print('🔹 Raw Server Response: ${response.body}');
 
-          Navigator.pop(context, true); // Return true to indicate successful login
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+
+          if (data['success'] == 1) {
+            print('✅ Login successful! Role: ${data['role']}');
+
+            final storage = GetStorage();
+            storage.write('userID', data['userID']);
+            storage.write('role', data['role'].toString()); // store as string
+            storage.write('firstName', data['firstName']);
+            storage.write('lastName', data['lastName']);
+            storage.write('email', data['email']);
+            storage.write('phoneNo', data['phoneNo']);
+
+            // Navigate to HomePage
+            Get.offAll(() => HomePage());
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Invalid email or password')),
+            );
+          }
         } else {
-          // Handle login error (e.g., show a message)
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Login failed')),
+            const SnackBar(content: Text('Server error, please try again')),
           );
         }
-      } else {
-        // Handle server error
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Server error, please try again')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }
@@ -82,14 +95,12 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo or Icon
                   Icon(
                     Icons.coffee,
                     size: 100,
                     color: Colors.brown.shade900,
                   ),
                   const SizedBox(height: 32),
-                  // Welcome Text
                   Text(
                     'Welcome Back',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -98,7 +109,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                   ),
                   const SizedBox(height: 40),
-                  // Login Form
                   Form(
                     key: _formKey,
                     child: Column(
@@ -109,7 +119,8 @@ class _LoginPageState extends State<LoginPage> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'Email',
-                            prefixIcon: const Icon(Icons.email, color: Colors.white70),
+                            prefixIcon:
+                                const Icon(Icons.email, color: Colors.white70),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.2),
                             border: OutlineInputBorder(
@@ -131,13 +142,15 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                         const SizedBox(height: 20),
+
                         // Password Field
                         TextFormField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
                             hintText: 'Password',
-                            prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                            prefixIcon:
+                                const Icon(Icons.lock, color: Colors.white70),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordVisible
@@ -168,12 +181,13 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                         const SizedBox(height: 12),
+
                         // Forgot Password
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () {
-                              // TODO: Implement forgot password
+                              // TODO: Forgot password flow
                             },
                             child: const Text(
                               'Forgot Password?',
@@ -182,17 +196,17 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 32),
+
                         // Login Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: (){
-                              Get.to(HomePage());
-                            },
+                            onPressed: _login,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.brown.shade900,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -207,6 +221,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
+
                         // Register Link
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -217,12 +232,13 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             TextButton(
                               onPressed: () {
+                                Get.to(() => const RegistrationPage());
                                 // TODO: Navigate to register page
                               },
-                              child: const Text(
+                              child:  Text(
                                 'Register',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: secondaryColor.withOpacity(0.9),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

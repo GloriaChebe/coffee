@@ -24,45 +24,30 @@ class AboutUsPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                'Welcome to our coffeeInn, your one-stop destination for the finest coffee from around the world. Our mission is to provide our customers with the highest quality coffee beans, sourced ethically and sustainably.',
+                'Welcome to our coffeeInn, your one-stop destination for the finest coffee from around the world. Our mission is to provide our customers with the highest quality coffee, sourced ethically and sustainably.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey.shade800, 
                 ),
               ),
-              // SizedBox(height: 20),
-              // Text(
-              //   'Contact Us:',
-              //   style: TextStyle(
-              //     fontSize: 18,
-              //     fontWeight: FontWeight.bold,
-              //     color: const Color(0xFFFFA000),
-              //   ),
-              // ),
-              // SizedBox(height: 10),
-              // Text(
-              //   'Address: Kimathi Street, City, Nairobi',
-              //   textAlign: TextAlign.center,
-              //   style: TextStyle(
-              //     color: Colors.grey.shade800, 
-              //   ),
-              // ),
-              // SizedBox(height: 5),
-              // Text(
-              //   'Phone: +254 768648904 ',
-              //   textAlign: TextAlign.center,
-              //   style: TextStyle(
-              //     color: Colors.grey.shade800, 
-              //   ),
-              // ),
-              // SizedBox(height: 5),
-              // Text(
-              //   'Email: info@b.com',
-              //   textAlign: TextAlign.center,
-              //   style: TextStyle(
-              //     color: Colors.grey.shade800, 
-              //   ),
-              // ),
+              SizedBox(height: 20),
+              Text(
+                'Location:',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFFFA000),
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Address: Kimathi Street, Nairobi City Center, Kenya',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade800, 
+                ),
+              ),
+             
             ],
           ),
         ),

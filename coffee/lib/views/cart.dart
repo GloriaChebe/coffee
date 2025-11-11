@@ -1,140 +1,147 @@
-// import 'dart:convert';
-// import 'package:coffee_shop/screens/dashboard_app.dart';
-// import 'package:coffee_shop/screens/product.dart';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:coffee/views/Item.dart';
+import 'package:coffee/views/checkout.dart';
 
-// class CartPage extends StatefulWidget {
-//   final List<Product> cartItems;
+class CartPage extends StatefulWidget {
+  final List<Product> cartItems;
+  final VoidCallback? onOrderPlaced;
 
-//   const CartPage({Key? key, required this.cartItems}) : super(key: key);
+  const CartPage({super.key, required this.cartItems, this.onOrderPlaced});
 
-//   @override
-//   _CartPageState createState() => _CartPageState();
-// }
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
 
-// class _CartPageState extends State<CartPage> {
-//   bool _orderPlaced = false;
+class _CartPageState extends State<CartPage> {
+  late Map<String, _AggregatedItem> aggregated;
 
-//   Future<void> _placeOrder(BuildContext context) async {
+  @override
+  void initState() {
+    super.initState();
+    aggregated = _aggregate(widget.cartItems);
+  }
 
-//     final List<Map<String, dynamic>> orderData = widget.cartItems.map((item) {
-//       return {
-//         'product_id': item.id,
-//         'product_name': item.name,
-//         'quantity': 1, 
-//       };
-//     }).toList();
+  /// Aggregate identical products into quantities
+  Map<String, _AggregatedItem> _aggregate(List<Product> items) {
+    final map = <String, _AggregatedItem>{};
+    for (var p in items) {
+      // Use id + name + price as key to avoid duplicates
+      final key = '${p.id ?? ''}::${p.name}::${p.price}';
+      if (map.containsKey(key)) {
+        map[key]!.quantity += 1;
+      } else {
+        map[key] = _AggregatedItem(product: p, quantity: 1);
+      }
+    }
+    return map;
+  }
 
-//     final response = await http.post(
-//       Uri.parse('http://www.nattiee.com/coffee/createorder.php'),
-//       body: json.encode(orderData),
-//       headers: {'Content-Type': 'application/json'},
-//     );
+  double get total {
+    return aggregated.values
+        .fold(0.0, (sum, a) => sum + (a.product.price * a.quantity));
+  }
 
-//     if (response.statusCode == 200) {
-      
-//       setState(() {
-//         _orderPlaced = true;
-//       });
+  void _onCheckout() {
+    final items = aggregated.values
+        .map((a) => {
+              'id': a.product.id ?? '',
+              'name': a.product.name,
+              'price': a.product.price,
+              'quantity': a.quantity,
+            })
+        .toList();
 
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: Text('Order Placed Successfully!'),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                   setState(() {
-//                     widget.cartItems.clear();
-//                   });
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(builder: (context) => DashboardScreen()),
-//                   );
-//                 },
-//                 child: Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//     } else {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CheckoutPage(
+          items: items,
+          total: total,
+          onOrderSuccess: () {
+            widget.onOrderPlaced?.call();
+            Navigator.popUntil(context, (route) => route.isFirst);
+          },
+        ),
+      ),
+    );
+  }
 
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: Text('Failed to Place Order'),
-//             content: Text('Please try again later.'),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//     }
-//   }
+  @override
+  Widget build(BuildContext context) {
+    final list = aggregated.values.toList();
 
-//   void _removeItem(Product item) {
-//     setState(() {
-//       widget.cartItems.remove(item);
-//     });
-//   }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Cart'),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      body: list.isEmpty
+          ? const Center(child: Text('Your cart is empty'))
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: list.length,
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final a = list[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          radius: 28,
+                          child: Text(
+                            a.product.name.isNotEmpty
+                                ? a.product.name[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        title: Text(a.product.name),
+                        subtitle:
+                            Text('Ksh ${a.product.price.toStringAsFixed(2)} x ${a.quantity}'),
+                        trailing: Text(
+                            'Ksh ${(a.product.price * a.quantity).toStringAsFixed(2)}'),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Total',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('Ksh ${total.toStringAsFixed(2)}',
+                              style: const TextStyle(fontSize: 18)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _onCheckout,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.brown.shade700,
+                          ),
+                          child: const Text('Proceed to Checkout'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Cart'),
-//       ),
-//       body: Column(
-//         children: [
-//           Expanded(
-//             child: ListView.builder(
-//               itemCount: widget.cartItems.length,
-//               itemBuilder: (context, index) {
-//                 final item = widget.cartItems[index];
-//                 return ListTile(
-//                   title: Text(item.name),
-//                   subtitle: Text('Price: \$${item.price}'),
-//                   leading: Image.network(
-//                     'http://www.nattiee.com/coffee/images/${item.image}',
-//                     width: 50,
-//                     height: 50,
-//                     fit: BoxFit.cover,
-//                   ),
-//                   trailing: IconButton(
-//                     icon: Icon(Icons.delete),
-//                     onPressed: () {
-//                       _removeItem(item);
-//                     },
-//                   ),
-//                 );
-//               },
-//             ),
-//           ),
-//           _orderPlaced
-//               ? Padding(
-//                   padding: const EdgeInsets.all(16.0),
-//                   child: Text(
-//                     'Order Placed Successfully!',
-//                     style: TextStyle(fontSize: 20, color: Colors.green),
-//                   ),
-//                 )
-//               : ElevatedButton(
-//                   onPressed: () => _placeOrder(context),
-//                   child: Text('Place Order'),
-//                 ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+class _AggregatedItem {
+  final Product product;
+  int quantity;
+  _AggregatedItem({required this.product, required this.quantity});
+}

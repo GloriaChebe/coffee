@@ -1,5 +1,8 @@
 import 'package:coffee/configs/constants.dart';
+import 'package:coffee/views/Admin/admin.dart' show AdminPage;
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,7 +26,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
   }
 
   Future<List<Map<String, String>>> _fetchUsers() async {
-    final url = Uri.parse('https://sanerylgloann.co.ke/donorApp/totalUsers.php');
+    final url = Uri.parse('https://sanerylgloann.co.ke/coffeeInn/totalUsers.php');
     try {
       final response = await http.get(url);
 
@@ -37,8 +40,8 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
               'id': (user['userID'] ?? 'N/A').toString(),
               'name': '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim(),
               'email': (user['email'] ?? 'N/A').toString(),
-              'contacts': (user['phoneNumber'] ?? 'N/A').toString(),
-              'role': (user['role'] == '1') ? 'Admin' : 'Donor',
+              'contacts': (user['phoneNo'] ?? 'N/A').toString(),
+              'role': (user['role'] == '1') ? 'Admin' : 'User',
             };
           }).toList();
 
@@ -75,10 +78,11 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color:appwhiteColor),
           onPressed: () {
-            Navigator.pushNamed(context, '/admin');
+            Get.to(() => AdminPage());
           },
         ),
         title: !_isSearching

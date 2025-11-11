@@ -15,7 +15,7 @@ class SplashScreen extends StatelessWidget {
       body: Stack(
         children: [
           Image.asset(
-            '/images/Espresso.png',
+            'assets/images/Espresso.png',
             fit: BoxFit.cover,
             width: MediaQuery.of(context)
                 .size

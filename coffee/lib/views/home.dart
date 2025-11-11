@@ -1,40 +1,49 @@
 import 'dart:convert';
-
 import 'package:coffee/configs/constants.dart';
-import 'package:coffee/views/Item.dart';
-import 'package:coffee/views/aboutUs.dart';
 import 'package:coffee/views/Admin/admin.dart';
-import 'package:coffee/views/contactUs.dart';
-import 'package:coffee/views/login.dart';
+import 'package:coffee/views/Item.dart';
+import 'package:coffee/views/cart.dart';
 import 'package:coffee/views/orders.dart';
+import 'package:coffee/views/profile.dart';
+import 'package:coffee/views/login.dart';
+import 'package:coffee/views/contactUs.dart';
+import 'package:coffee/views/aboutUs.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _DashboardScreenState extends State<HomePage> {
+class _HomePageState extends State<HomePage> {
   late Future<List<Product>> _futureProducts;
   List<Product> _cartItems = [];
-  List<Product> _placedOrders = [];
   int _selectedIndex = 0;
+  String role = '';
 
   @override
   void initState() {
     super.initState();
     _futureProducts = fetchProducts();
+
+    final storage = GetStorage();
+    role = storage.read('role')?.toString() ?? '';
   }
 
   Future<List<Product>> fetchProducts() async {
-    final response = await http
-        .get(Uri.parse("https://sanerylgloann.co.ke/coffeeInn/readItems.php"));
+    final response = await http.get(
+        Uri.parse("https://sanerylgloann.co.ke/coffeeInn/readItems.php"));
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       List items = [];
+
       if (jsonData is List) {
         items = jsonData;
       } else if (jsonData is Map) {
@@ -51,69 +60,36 @@ class _DashboardScreenState extends State<HomePage> {
         }
       }
 
-      final List<Product> products = items
-          .map((productJson) => Product.fromJson(Map<String, dynamic>.from(productJson)))
+      return items
+          .map((productJson) =>
+              Product.fromJson(Map<String, dynamic>.from(productJson)))
           .toList();
-
-      return products;
     } else {
       throw Exception('Failed to load products');
     }
   }
 
-  void _addToCart(Product product) async {
-    final storage = GetStorage();
-    final isLoggedIn = storage.read('userID') != null;
-
-    if (!isLoggedIn) {
-      final result = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Login Required'),
-          content: Text('Please login to add items to cart'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context, true);
-                final loginResult = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage())
-                );
-                if (loginResult == true) {
-                  _showQuantityDialog(product);
-                }
-              },
-              child: Text('Login'),
-            ),
-          ],
-        )
-      );
-      if (result != true) return;
-    } else {
-      _showQuantityDialog(product);
-    }
+  void _addToCart(Product product) {
+    _showQuantityDialog(product);
   }
 
   void _showQuantityDialog(Product product) {
-    TextEditingController quantityController = TextEditingController();
+    final quantityController = TextEditingController(text: '1');
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Add to Cart'),
+          title: const Text('Add to Cart'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text('Enter Quantity:'),
-              SizedBox(height: 10),
+              const Text('Enter Quantity:'),
+              const SizedBox(height: 10),
               TextField(
                 controller: quantityController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Quantity',
                 ),
               ),
@@ -121,24 +97,28 @@ class _DashboardScreenState extends State<HomePage> {
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 int quantity = int.tryParse(quantityController.text) ?? 0;
                 if (quantity > 0) {
                   setState(() {
-                    for (int i = 0; i < quantity; i++) {
-                      _cartItems.add(product);
-                    }
+                    _cartItems.addAll(List.filled(quantity, product));
                   });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          '$quantity ${product.name} added to cart!'),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
                 }
                 Navigator.of(context).pop();
               },
-              child: Text('Add'),
+              child: const Text('Order Now'),
             ),
           ],
         );
@@ -162,28 +142,23 @@ class _DashboardScreenState extends State<HomePage> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                primaryColor,
-                primaryColor,
-              ],
+              colors: [primaryColor, primaryColor],
             ),
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
           ),
-          child: FittedBox(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  "Indulge in our premium coffee blends and treats!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+          child: const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                "Indulge in our premium coffee blends and treats!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -194,14 +169,16 @@ class _DashboardScreenState extends State<HomePage> {
             future: _futureProducts,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               } else {
                 return GridView.builder(
-                  padding: EdgeInsets.fromLTRB(12, 12, 12, kBottomNavigationBarHeight + 20),
-                  physics: AlwaysScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: EdgeInsets.fromLTRB(
+                      12, 12, 12, kBottomNavigationBarHeight + 80),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 0.72,
                     crossAxisSpacing: 8.0,
@@ -209,14 +186,9 @@ class _DashboardScreenState extends State<HomePage> {
                   ),
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        _addToCart(snapshot.data![index]);
-                      },
-                      child: ProductItem(
-                        product: snapshot.data![index],
-                        onAddToCart: _addToCart,
-                      ),
+                    return ProductItem(
+                      product: snapshot.data![index],
+                      onAddToCart: _addToCart,
                     );
                   },
                 );
@@ -233,83 +205,82 @@ class _DashboardScreenState extends State<HomePage> {
     return Scaffold(
       appBar: _selectedIndex == 0
           ? AppBar(
-              title: Text(
+              title: const Text(
                 "Welcome to coffeeInn!",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               centerTitle: true,
               backgroundColor: primaryColor,
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.account_circle_outlined, color: Colors.white, size: 40),
-                  onPressed: () async {
-                    final storage = GetStorage();
-                    final userRole = storage.read('userRole');
-                    final isLoggedIn = storage.read('userID') != null;
-
-                    if (isLoggedIn) {
-                      if (userRole == '1') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => AdminPage()),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                        );
-                      }
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage())
-                      );
-                    }
-                  },
-                ),
-              ],
+              actions: role == '1'
+                  ? [
+                      IconButton(
+                        icon: const Icon(Icons.admin_panel_settings,
+                            color: Colors.white, size: 40),
+                        onPressed: () {
+                          Get.to(() => AdminPage());
+                        },
+                      ),
+                    ]
+                  : [],
             )
           : null,
       body: IndexedStack(
         index: _selectedIndex,
         children: [
           _buildDashboard(),
-          Statuspage(),
+          StatusPage(), // your orders/history page
         ],
       ),
-      floatingActionButton: _cartItems.isEmpty
-          ? null
-          : FloatingActionButton(
-              onPressed: () {
-              },
-              child: Stack(
-                children: [
-                  Icon(Icons.shopping_cart),
-                  Positioned(
-                    right: 0,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.red,
-                      radius: 8,
-                      child: Text(
-                        _cartItems.length.toString(),
-                        style: TextStyle(fontSize: 10),
-                      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _cartItems.isEmpty
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartPage(
+                      cartItems: _cartItems,
+                      onOrderPlaced: () {
+                        setState(() => _cartItems.clear());
+                      },
                     ),
                   ),
-                ],
+                );
+              },
+        backgroundColor:
+            _cartItems.isEmpty ? Colors.grey : primaryColor,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const Icon(Icons.shopping_cart),
+            if (_cartItems.isNotEmpty)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: CircleAvatar(
+                  backgroundColor: secondaryColor,
+                  radius: 8,
+                  child: Text(
+                    _cartItems.length.toString(),
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ),
               ),
-            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFA000),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          color: primaryColor,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(16)),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.5),
               spreadRadius: 5,
               blurRadius: 7,
-              offset: Offset(0, -3),
+              offset: const Offset(0, -3),
             ),
           ],
         ),
@@ -340,55 +311,61 @@ class _DashboardScreenState extends State<HomePage> {
                 children: <Widget>[
                   DrawerHeader(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFA000),
+                      color: primaryColor,
                     ),
                     child: Text(
                       'coffeeInn',
                       style: GoogleFonts.pacifico(
-                          fontSize: 50,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                        fontSize: 50,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   ListTile(
-                    leading: Icon(Icons.account_circle),
-                    title: Text('Profile'),
+                    leading: const Icon(Icons.account_circle),
+                    title: const Text('Profile'),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => LoginPage()),
+                            builder: (context) =>
+                                ProfileDetailsPage()),
                       );
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.support_agent),
-                    title: Text('Contact Support'),
+                    leading: const Icon(Icons.support_agent),
+                    title: const Text('Contact Support'),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ContactUsPage()),
+                        MaterialPageRoute(
+                            builder: (context) => ContactUsPage()),
                       );
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.info),
-                    title: Text('About Us'),
+                    leading: const Icon(Icons.info),
+                    title: const Text('About Us'),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AboutUsPage()),
+                        MaterialPageRoute(
+                            builder: (context) => AboutUsPage()),
                       );
                     },
                   ),
-                  Divider(height: 10, thickness: 1.0),
+                  const Divider(height: 10, thickness: 1.0),
                   ListTile(
-                    leading: Icon(Icons.logout),
-                    title: Text('Log Out'),
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Log Out'),
                     onTap: () {
-                      Navigator.push(
+                      GetStorage().erase();
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
                       );
                     },
                   ),

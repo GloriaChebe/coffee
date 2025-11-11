@@ -1,7 +1,9 @@
-
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:coffee/configs/constants.dart';
+import 'package:coffee/views/login.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -17,10 +19,9 @@ class _RegisterPageState extends State<RegistrationPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
- 
+
   bool _obscurePassword = true;
-  bool _obscureConfirm = true;
-  bool _isLoading = false; // <--- loading state
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -29,20 +30,16 @@ class _RegisterPageState extends State<RegistrationPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
-    
     super.dispose();
   }
 
   void _submit() async {
-    // removed TOS check per request
-
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     final uri = Uri.parse('https://sanerylgloann.co.ke/coffeeInn/createUsers.php');
 
-    // Adjust keys to match your PHP backend if needed
     final body = {
       'firstName': _firstNameController.text.trim(),
       'lastName': _lastNameController.text.trim(),
@@ -53,22 +50,25 @@ class _RegisterPageState extends State<RegistrationPage> {
 
     try {
       final response = await http.post(uri, body: body).timeout(const Duration(seconds: 15));
-
       setState(() => _isLoading = false);
 
-      if (response.statusCode == 200) {
-        try {
-          final data = jsonDecode(response.body);
-          final msg = data['message'] ?? response.body;
-          final ok = data['success'] == true || data['status'] == 'ok' || data['success'] == '1';
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg.toString())));
-          if (ok) Navigator.of(context).pop(); // go back to login on success
-          return;
-        } catch (_) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.body)));
-          return;
-        }
-      }
+     if (response.statusCode == 200) {
+  final data = jsonDecode(response.body);
+  final msg = data['message'] ?? response.body;
+
+  // Properly handle int/string from backend
+  final successRaw = data['success'];
+  final ok = successRaw == 1 || successRaw == '1' || data['status'] == 'ok';
+
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg.toString())));
+
+  if (ok) {
+    // Navigate to login page
+    Get.offAll(() => const LoginPage());
+  }
+  return;
+}
+
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed: ${response.statusCode} ${response.reasonPhrase}')),
@@ -129,17 +129,16 @@ class _RegisterPageState extends State<RegistrationPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Top logo / title
                         Row(
                           children: [
                             Container(
                               height: 64,
                               width: 64,
                               decoration: BoxDecoration(
-                                color: Colors.brown.shade200,
+                                color: primaryColor.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.local_cafe, size: 36, color: Colors.white),
+                              child: const Icon(Icons.local_cafe, size: 36, color: primaryColor),
                             ),
                             const SizedBox(width: 12),
                             const Expanded(
@@ -152,7 +151,7 @@ class _RegisterPageState extends State<RegistrationPage> {
                         ),
                         const SizedBox(height: 18),
 
-                        // Names side-by-side on wide screens
+                        // Names fields
                         isWide
                             ? Row(
                                 children: [
@@ -161,9 +160,7 @@ class _RegisterPageState extends State<RegistrationPage> {
                                       controller: _firstNameController,
                                       decoration: _inputDecoration(label: 'First Name', icon: Icons.person),
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter your first name';
-                                        }
+                                        if (value == null || value.isEmpty) return 'Please enter your first name';
                                         return null;
                                       },
                                     ),
@@ -174,9 +171,7 @@ class _RegisterPageState extends State<RegistrationPage> {
                                       controller: _lastNameController,
                                       decoration: _inputDecoration(label: 'Last Name', icon: Icons.person_outline),
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter your last name';
-                                        }
+                                        if (value == null || value.isEmpty) return 'Please enter your last name';
                                         return null;
                                       },
                                     ),
@@ -189,9 +184,7 @@ class _RegisterPageState extends State<RegistrationPage> {
                                     controller: _firstNameController,
                                     decoration: _inputDecoration(label: 'First Name', icon: Icons.person),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your first name';
-                                      }
+                                      if (value == null || value.isEmpty) return 'Please enter your first name';
                                       return null;
                                     },
                                   ),
@@ -200,9 +193,7 @@ class _RegisterPageState extends State<RegistrationPage> {
                                     controller: _lastNameController,
                                     decoration: _inputDecoration(label: 'Last Name', icon: Icons.person_outline),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your last name';
-                                      }
+                                      if (value == null || value.isEmpty) return 'Please enter your last name';
                                       return null;
                                     },
                                   ),
@@ -215,12 +206,9 @@ class _RegisterPageState extends State<RegistrationPage> {
                           decoration: _inputDecoration(label: 'Email', icon: Icons.email),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                            if (value == null || value.isEmpty) return 'Please enter your email';
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value))
                               return 'Please enter a valid email';
-                            }
                             return null;
                           },
                         ),
@@ -231,16 +219,14 @@ class _RegisterPageState extends State<RegistrationPage> {
                           decoration: _inputDecoration(label: 'Phone Number', icon: Icons.phone),
                           keyboardType: TextInputType.phone,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your phone number';
-                            }
+                            if (value == null || value.isEmpty) return 'Please enter your phone number';
                             return null;
                           },
                         ),
                         const SizedBox(height: 12),
 
                         TextFormField(
-                          controller: _passwordController ?? _passwordController,
+                          controller: _passwordController,
                           decoration: _inputDecoration(label: 'Password', icon: Icons.lock).copyWith(
                             suffixIcon: IconButton(
                               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
@@ -249,16 +235,11 @@ class _RegisterPageState extends State<RegistrationPage> {
                           ),
                           obscureText: _obscurePassword,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a password';
-                            }
-                            if (value.length < 6) {
-                              return 'Password must be at least 6 characters';
-                            }
+                            if (value == null || value.isEmpty) return 'Please enter a password';
+                            if (value.length < 6) return 'Password must be at least 6 characters';
                             return null;
                           },
                         ),
-                        
                         const SizedBox(height: 8),
 
                         SizedBox(
@@ -272,10 +253,14 @@ class _RegisterPageState extends State<RegistrationPage> {
                               elevation: 6,
                             ),
                             child: _isLoading
-                                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
                                 : const Text(
                                     'Create account',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
                                   ),
                           ),
                         ),
@@ -287,9 +272,12 @@ class _RegisterPageState extends State<RegistrationPage> {
                             const Text('Already have an account?'),
                             TextButton(
                               onPressed: () {
-                                Navigator.of(context).pop(); // assume back to login
+                                Get.to(() => const LoginPage());
                               },
-                              child: const Text('Sign in'),
+                              child: Text(
+                                'Sign in',
+                                style: TextStyle(color: secondaryColor.withOpacity(0.9)),
+                              ),
                             )
                           ],
                         ),
