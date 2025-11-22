@@ -44,7 +44,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   labelText: 'Phone (07XXXXXXXX)',
                 ),
                 inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly, // Only numbers allowed
+                FilteringTextInputFormatter.digitsOnly, 
                  LengthLimitingTextInputFormatter(10),   // Limit to 10 digits
   ],
               ),
@@ -182,7 +182,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               width: double.infinity,
               child:ElevatedButton(
   style: ElevatedButton.styleFrom(
-    backgroundColor: primaryColor, // 🌿 Change this to your preferred color
+    backgroundColor: primaryColor, 
     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),

@@ -12,23 +12,23 @@ class UserProfileController extends GetxController {
   Future<void> fetchUserProfile(String userID) async {
     isLoading.value = true;
     try {
-      print("Fetching user profile for userID: $userID"); // Debug log
+      //print("Fetching user profile for userID: $userID"); 
       final response = await http.get(
         Uri.parse('https://sanerylgloann.co.ke/donorApp/readUser.php?userID=$userID'), 
       );
 
-      print("Response status: ${response.statusCode}"); // Debug log
-      print("Response body: ${response.body}"); // Debug log
+      // print("Response status: ${response.statusCode}");
+      // print("Response body: ${response.body}"); 
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         user.value = UserProfile.fromJson(jsonData);
-        print("User profile loaded: ${user.value}"); // Debug log
+        //print("User profile loaded: ${user.value}"); 
       } else {
         Get.snackbar('Error', 'Server returned ${response.statusCode}');
       }
     } catch (e) {
-      print("Exception: $e"); // Debug log
+      //print("Exception: $e");
       Get.snackbar('Exception', e.toString());
     } finally {
       isLoading.value = false;

@@ -63,7 +63,7 @@ class _StatusPageState extends State<StatusPage>
         }
 
         if (donationController.userDonations.isEmpty) {
-          return const Center(child: Text("No donations found."));
+          return const Center(child: Text("No orders found."));
         }
 
         return ListView.builder(

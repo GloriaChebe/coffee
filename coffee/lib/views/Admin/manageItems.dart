@@ -3,16 +3,13 @@ import 'package:coffee/configs/constants.dart';
 import 'package:coffee/controller/itemController.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_application_1/configs/constants.dart';
-// import 'package:flutter_application_1/controllers/itemController.dart';
-// import 'package:flutter_application_1/views/donate.dart';
+
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
-//String? selectedCategory = 'Food';
- // String? urgency = 'Urgent';
+
    final ItemController itemController = Get.put(ItemController());
     final TextEditingController priceController = TextEditingController();
     
@@ -27,8 +24,6 @@ class CategoriesAdmin extends StatefulWidget {
 
 class _CategoriesAdminState extends State<CategoriesAdmin> {
  
-  //final CategoryController categoryController = Get.put(CategoryController());
-  //final TextEditingController nameController = TextEditingController();
   
   @override
   Widget build(BuildContext context) {
@@ -51,7 +46,7 @@ class _CategoriesAdminState extends State<CategoriesAdmin> {
       ),
       body: Column(
         children: [
-          // Category Filter Chips
+        
          
 
           // Header Section
@@ -70,7 +65,7 @@ class _CategoriesAdminState extends State<CategoriesAdmin> {
                       ),
                     )),
                 SizedBox(width: 16),
-                //making sure when user exit search all items comes back
+              
 
                 Container(
                   width: MediaQuery.of(context).size.width * 0.5,
@@ -165,16 +160,7 @@ class _CategoriesAdminState extends State<CategoriesAdmin> {
 ,
   ],
 ),
-                    // if (selectedCategory == 'Money')
-                    //   TextField(
-                    //     controller: amountController,
-
-                    //     decoration: InputDecoration(
-                    //       labelText: 'Enter Amount',
-                    //       border: OutlineInputBorder(),
-                    //     ),
-                    //     //keyboardType: TextInputType.number,
-                    //   ),
+                   
                     SizedBox(height: 16),
                     // Image picker section
                     Row(
@@ -295,7 +281,7 @@ class _CategoriesAdminState extends State<CategoriesAdmin> {
 
     var request = http.MultipartRequest("POST", url);
 
-    // Add text fields
+    
     request.fields['name'] = nameController.text;
     request.fields['price'] = priceController.text;
      //request.fields['amount'] = amountController.text;
@@ -524,13 +510,7 @@ class ItemSearchDelegate extends SearchDelegate<String> {
       },
     );
   }
-// void _clearFormFields() {
-//   nameController.clear();
-  
-//   selectedImage = null;
-//   selectedCategory = 'Food';
-//   urgency = 'Urgent';
-// }
+
 
 
  

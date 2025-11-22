@@ -5,6 +5,7 @@ import 'package:coffee/controller/reportsController.dart';
 import 'package:coffee/model/statusModel.dart' show Donation;
 import 'package:coffee/views/Admin/manage%20users.dart';
 import 'package:coffee/views/Admin/manageItems.dart';
+import 'package:coffee/views/Admin/manageOrders.dart';
 import 'package:coffee/views/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,9 +44,7 @@ class _AdminPageState extends State<AdminPage> {
       icon: const Icon(Icons.logout, color: Colors.white),
       tooltip: 'Log Out',
       onPressed: () {
-        // Clear stored session data
-        //GetStorage().erase();
-        // Navigate to login page
+        
         Get.offAll(() => HomePage());
       },
     ),
@@ -137,7 +136,7 @@ class _AdminPageState extends State<AdminPage> {
                     title: 'Manage Orders',
                     icon: Icons.volunteer_activism,
                     onTap: () {
-                      Get.to(() => CategoriesAdmin());
+                      Get.to(() => AdminManageOrdersPage());
                     },
                   ),
                   _buildAdminCard(
@@ -173,7 +172,7 @@ class _AdminPageState extends State<AdminPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Donations Report',
+                        'Orders Report',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -196,7 +195,7 @@ class _AdminPageState extends State<AdminPage> {
                             ),
                             icon: const Icon(Icons.card_giftcard,
                                 color: Colors.white),
-                            label: const Text('Item Donations',
+                            label: const Text('Item Orders',
                                 style: TextStyle(color: Colors.white)),
                           ),
                         ],
@@ -272,14 +271,14 @@ class _AdminPageState extends State<AdminPage> {
   }
 }
 
-// PDF generation for item donations
+// PDF generation for item orders
 Future<void> generateItemDonationsPdf(List<Donation> donations) async {
   final pdf = pw.Document();
 
   pdf.addPage(
     pw.MultiPage(
       build: (pw.Context context) => [
-        pw.Text('Item Donations Report',
+        pw.Text('Item Orders Report',
             style:
                 pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 20),
@@ -298,7 +297,7 @@ Future<void> generateItemDonationsPdf(List<Donation> donations) async {
             'Item',
             'Quantity',
             'Status',
-            'Time Donated'
+            'Time Ordered'
           ],
           data: donations.map((donation) {
             return [
